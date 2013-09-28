@@ -88,28 +88,21 @@
 			});
 		} else if (state == kCTFontDescriptorMatchingDidFailWithError) {
 
-            // An error has occurred.
-            // Get the error message
-            NSError *error = [(__bridge NSDictionary *)progressParameter objectForKey:(id)kCTFontDescriptorMatchingError];
-            
-            // Set our flag
-            errorDuringDownload = YES;
-            
-            dispatch_async( dispatch_get_main_queue(), ^ {
-                [self.delegate downloadFailedForFont:fontName error:error];
-			});
+            if (!errorDuringDownload) {
+                // An error has occurred.
+                // Get the error message
+                NSError *error = [(__bridge NSDictionary *)progressParameter objectForKey:(id)kCTFontDescriptorMatchingError];
+                
+                // Set our flag
+                errorDuringDownload = YES;
+                
+                dispatch_async( dispatch_get_main_queue(), ^ {
+                    [self.delegate downloadFailedForFont:fontName error:error];
+                });
+            }
 		} else if (state == kCTFontDescriptorMatchingStalled) {
-            // Treat this as an error
-            // An error has occurred.
-            // Get the error message
-            NSError *error = [NSError errorWithDomain:@"fontDownloadFailed" code:100 userInfo:nil];
-            
-            // Set our flag
-            errorDuringDownload = YES;
-            
-            dispatch_async( dispatch_get_main_queue(), ^ {
-                [self.delegate downloadFailedForFont:fontName error:error];
-			});
+            // This isn't an error; it will happen during normal font downloads and simply
+            // indicates that download is still in progress, but no data is being received right now.
         }
         
 		return (bool)YES;
